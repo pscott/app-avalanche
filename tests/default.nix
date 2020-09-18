@@ -1,6 +1,7 @@
 { pkgs ? import ../nix/dep/nixpkgs {} }:
 let
-  yarn2nix = import deps/yarn2nix { inherit pkgs; };
+  nodejs = pkgs.nodejs-12_x;
+  yarn2nix = import deps/yarn2nix { pkgs = pkgs // { inherit nodejs; }; };
   getThunkSrc = (import ./deps/reflex-platform { }).hackGet;
   npmDepsNix = pkgs.runCommand "npm-deps.nix" {} ''
     ${yarn2nix}/bin/yarn2nix --offline ${./yarn.lock} > $out
@@ -27,7 +28,7 @@ let
             sha1 = "d2d7d8a808b5efeb09fe529034a30bd772902d84";
           };
           buildPhase = ''
-            ${pkgs.nodePackages.node-gyp}/bin/node-gyp rebuild --nodedir=${pkgs.lib.getDev pkgs.nodejs} # /include/node
+            ${pkgs.nodePackages.node-gyp}/bin/node-gyp rebuild --nodedir=${pkgs.lib.getDev nodejs} # /include/node
           '';
          nativeBuildInputs = [ pkgs.python ];
           nodeBuildInputs = [
@@ -39,11 +40,11 @@ let
         "usb@1.6.3" = {
           key = super."usb@1.6.3".key;
           drv = super."usb@1.6.3".drv.overrideAttrs (attrs: {
-            nativeBuildInputs = [ pkgs.python pkgs.systemd pkgs.v8_5_x pkgs.nodejs pkgs.libusb1 ];
+            nativeBuildInputs = [ pkgs.python pkgs.systemd pkgs.v8_5_x nodejs pkgs.libusb1 ];
             dontBuild = false;
             buildPhase = ''
               ln -s ${nixLib.linkNodeDeps { name=attrs.name; dependencies=attrs.passthru.nodeBuildInputs; }} node_modules
-              ${pkgs.nodePackages.node-gyp}/bin/node-gyp rebuild --nodedir=${pkgs.lib.getDev pkgs.nodejs} # /include/node
+              ${pkgs.nodePackages.node-gyp}/bin/node-gyp rebuild --nodedir=${pkgs.lib.getDev nodejs} # /include/node
             '';
           });
         };
@@ -51,11 +52,11 @@ let
         "node-hid@1.3.0" = {
           key = super."node-hid@1.3.0".key;
           drv = super."node-hid@1.3.0".drv.overrideAttrs (attrs: {
-            nativeBuildInputs = [ pkgs.python pkgs.systemd pkgs.v8_5_x pkgs.nodejs pkgs.libusb1 pkgs.pkg-config ];
+            nativeBuildInputs = [ pkgs.python pkgs.systemd pkgs.v8_5_x nodejs pkgs.libusb1 pkgs.pkg-config ];
             dontBuild = false;
             buildPhase = ''
               ln -s ${nixLib.linkNodeDeps { name=attrs.name; dependencies=attrs.passthru.nodeBuildInputs; }} node_modules
-              ${pkgs.nodePackages.node-gyp}/bin/node-gyp rebuild --nodedir=${pkgs.lib.getDev pkgs.nodejs} # /include/node
+              ${pkgs.nodePackages.node-gyp}/bin/node-gyp rebuild --nodedir=${pkgs.lib.getDev nodejs} # /include/node
             '';
           });
         };
