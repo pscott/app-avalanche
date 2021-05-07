@@ -210,7 +210,18 @@ size_t subunit_to_unit_string(char *const dest, size_t const buff_size, uint64_t
     return off;
 }
 
-size_t nano_avax_to_string(char *const dest, size_t const buff_size, uint64_t nano_avax) {
+// Display avax in human readable form
+size_t subunit_to_unit_string_256(char *const dest, size_t const buff_size, uint256_t *subunits, uint8_t digits) {
+    check_null(dest);
+    size_t off = tostring256_fixed_point(subunits, 10, digits, dest, buff_size);
+
+    if (off == (size_t)-1)
+      THROW(EXC_WRONG_LENGTH); // terminating null
+
+    return off;
+}
+
+size_t nano_avax_to_string(char *const dest, size_t const buff_size, uint64_t const nano_avax) {
   static char const unit[] = " AVAX";
   size_t ix = subunit_to_unit_string(dest, buff_size, nano_avax, NANO_AVAX_SCALE);
   if (ix + sizeof(unit) > buff_size) THROW_(EXC_MEMORY_ERROR, "Can't fit ' AVAX' into prompt value string");
@@ -218,10 +229,34 @@ size_t nano_avax_to_string(char *const dest, size_t const buff_size, uint64_t na
   ix += sizeof(unit) - 1;
   return ix;
 }
-size_t wei_to_gwei_string(char *const dest, size_t const buff_size, uint64_t wei) {
+size_t wei_to_gwei_string(char *const dest, size_t const buff_size, uint64_t const wei) {
   static char const unit[] = " GWEI";
   size_t ix = subunit_to_unit_string(dest, buff_size, wei, WEI_GWEI_SCALE);
-  if (ix + sizeof(unit) > buff_size) THROW_(EXC_MEMORY_ERROR, "Can't fit ' AVAX' into prompt value string");
+  if (ix + sizeof(unit) > buff_size) THROW_(EXC_MEMORY_ERROR, "Can't fit ' GWEI' into prompt value string");
+  memcpy(&dest[ix], unit, sizeof(unit));
+  ix += sizeof(unit) - 1;
+  return ix;
+}
+size_t wei_to_gwei_string256(char *const dest, size_t const buff_size, uint64_t const wei) {
+  static char const unit[] = " GWEI";
+  size_t ix = subunit_to_unit_string_256(dest, buff_size, wei, 9);
+  if (ix + sizeof(unit) > buff_size) THROW_(EXC_MEMORY_ERROR, "Can't fit ' GWEI' into prompt value string");
+  memcpy(&dest[ix], unit, sizeof(unit));
+  ix += sizeof(unit) - 1;
+  return ix;
+}
+size_t wei_to_navax_string(char *const dest, size_t const buff_size, uint64_t const wei) {
+  static char const unit[] = " nAVAX";
+  size_t ix = subunit_to_unit_string(dest, buff_size, wei, WEI_GWEI_SCALE);
+  if (ix + sizeof(unit) > buff_size) THROW_(EXC_MEMORY_ERROR, "Can't fit ' nAVAX' into prompt value string");
+  memcpy(&dest[ix], unit, sizeof(unit));
+  ix += sizeof(unit) - 1;
+  return ix;
+}
+size_t wei_to_navax_string_256(char *const dest, size_t const buff_size, uint256_t const *const wei) {
+  static char const unit[] = " nAVAX";
+  size_t ix = subunit_to_unit_string_256(dest, buff_size, wei, 9);
+  if (ix + sizeof(unit) > buff_size) THROW_(EXC_MEMORY_ERROR, "Can't fit ' nAVAX' into prompt value string");
   memcpy(&dest[ix], unit, sizeof(unit));
   ix += sizeof(unit) - 1;
   return ix;
